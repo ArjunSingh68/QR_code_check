@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0f1419" />
+    <meta name="color-scheme" content="dark" />
+    <title>QR Create &amp; Scan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0f1419;
+        --surface: #1a222c;
+        --border: #2d3845;
+        --text: #e8eef4;
+        --muted: #8b9aad;
+        --accent: #5b9fd4;
+        --accent-hover: #7ab3e0;
+        --radius: 12px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
+        font-family: "DM Sans", system-ui, sans-serif;
+        background: radial-gradient(ellipse 120% 80% at 50% -20%, #1a2a3a 0%, var(--bg) 55%);
+        color: var(--text);
+        line-height: 1.5;
+        overflow-x: hidden;
+      }
+
+      .wrap {
+        max-width: min(520px, 100%);
+        margin: 0 auto;
+        padding: 2.5rem 1.25rem 3rem;
+        padding-top: max(2.5rem, env(safe-area-inset-top));
+        padding-right: max(1.25rem, env(safe-area-inset-right));
+        padding-bottom: max(3rem, env(safe-area-inset-bottom));
+        padding-left: max(1.25rem, env(safe-area-inset-left));
+      }
+
+      h1 {
+        font-size: 1.65rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        margin: 0 0 0.35rem;
+      }
+
+      .sub {
+        color: var(--muted);
+        font-size: 0.95rem;
+        margin: 0 0 1.75rem;
+        overflow-wrap: anywhere;
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem 1.35rem;
+        margin-bottom: 1.25rem;
+      }
+
+      label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--muted);
+        margin-bottom: 0.4rem;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 100px;
+        padding: 0.75rem 0.85rem;
+        font: inherit;
+        font-size: 0.95rem;
+        color: var(--text);
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        resize: vertical;
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(91, 159, 212, 0.2);
+      }
+
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: flex-end;
+        margin-top: 1rem;
+      }
+
+      .field {
+        flex: 1;
+        min-width: 140px;
+      }
+
+      select {
+        width: 100%;
+        padding: 0.6rem 0.75rem;
+        font: inherit;
+        font-size: 0.9rem;
+        color: var(--text);
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      select:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin-top: 1rem;
+      }
+
+      button {
+        font: inherit;
+        font-size: 0.9rem;
+        font-weight: 500;
+        padding: 0.55rem 1rem;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: background 0.15s ease, opacity 0.15s ease;
+      }
+
+      button.primary {
+        background: var(--accent);
+        color: #0a0e12;
+      }
+
+      button.primary:hover:not(:disabled) {
+        background: var(--accent-hover);
+      }
+
+      button.secondary {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+
+      button.secondary:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      .preview {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .canvas-box {
+        padding: 1rem;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+      }
+
+      canvas {
+        display: block;
+        max-width: 100%;
+        height: auto;
+      }
+
+      .hint {
+        font-size: 0.85rem;
+        color: var(--muted);
+        text-align: center;
+        margin: 0;
+      }
+
+      .empty .canvas-box {
+        min-height: 200px;
+        min-width: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg);
+        border: 1px dashed var(--border);
+        box-shadow: none;
+      }
+
+      .encode-hint {
+        font-size: 0.8rem;
+        color: var(--muted);
+        text-align: center;
+        margin: 0.75rem 0 0;
+        line-height: 1.45;
+        max-width: 36rem;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .encode-hint code {
+        font-size: 0.85em;
+        padding: 0.1em 0.35em;
+        border-radius: 4px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+      }
+
+      .tabs {
+        display: flex;
+        gap: 0.35rem;
+        margin: 0 0 1.25rem;
+        padding: 0.2rem;
+        background: var(--bg);
+        border-radius: 10px;
+        border: 1px solid var(--border);
+      }
+
+      .tabs button {
+        flex: 1;
+        padding: 0.55rem 0.75rem;
+        font: inherit;
+        font-size: 0.88rem;
+        font-weight: 500;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+      }
+
+      .tabs button:hover {
+        color: var(--text);
+      }
+
+      .tabs button.active {
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+      }
+
+      .tabs button:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .drop-zone {
+        border: 2px dashed var(--border);
+        border-radius: var(--radius);
+        padding: 2rem 1.25rem;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.15s ease, background 0.15s ease;
+      }
+
+      .drop-zone:hover,
+      .drop-zone.dragover {
+        border-color: var(--accent);
+        background: rgba(91, 159, 212, 0.06);
+      }
+
+      .drop-zone strong {
+        display: block;
+        font-size: 0.95rem;
+        margin-bottom: 0.35rem;
+        color: var(--text);
+      }
+
+      .drop-zone span {
+        font-size: 0.82rem;
+        color: var(--muted);
+      }
+
+      .scan-preview-wrap {
+        margin-top: 1rem;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        max-height: 220px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .scan-preview-wrap img {
+        display: block;
+        max-width: 100%;
+        max-height: 220px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+      }
+
+      .scan-status {
+        margin-top: 0.85rem;
+        font-size: 0.88rem;
+        line-height: 1.45;
+        min-height: 2.6em;
+        color: var(--muted);
+      }
+
+      .scan-status[data-kind="busy"] {
+        color: var(--accent);
+      }
+
+      .scan-status[data-kind="ok"] {
+        color: #7dd3ac;
+      }
+
+      .scan-status[data-kind="error"] {
+        color: #f0a8a8;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      @media (max-width: 540px) {
+        .wrap {
+          padding-top: max(1.25rem, env(safe-area-inset-top));
+          padding-bottom: max(2rem, env(safe-area-inset-bottom));
+        }
+
+        h1 {
+          font-size: 1.45rem;
+          line-height: 1.2;
+        }
+
+        .sub {
+          font-size: 0.9rem;
+          margin-bottom: 1.25rem;
+        }
+
+        .card {
+          padding: 1rem 1rem;
+        }
+
+        /* Avoid iOS zoom on focus; keeps layout readable */
+        textarea,
+        select {
+          font-size: 16px;
+        }
+
+        select {
+          min-height: 44px;
+          padding: 0.65rem 0.75rem;
+        }
+
+        textarea {
+          min-height: 120px;
+        }
+
+        .tabs button {
+          min-height: 44px;
+          padding: 0.6rem 0.5rem;
+          font-size: 0.85rem;
+          touch-action: manipulation;
+        }
+
+        .actions {
+          flex-direction: column;
+        }
+
+        .actions .primary,
+        .actions .secondary {
+          width: 100%;
+          min-height: 48px;
+          padding: 0.7rem 1rem;
+          touch-action: manipulation;
+        }
+
+        .drop-zone {
+          min-height: 132px;
+          padding: 1.5rem 1rem;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          touch-action: manipulation;
+        }
+
+        .drop-zone:active {
+          background: rgba(91, 159, 212, 0.1);
+        }
+
+        .empty .canvas-box {
+          min-width: 0;
+          width: 100%;
+          min-height: min(200px, 50vw);
+        }
+
+        .encode-hint {
+          font-size: 0.78rem;
+          padding: 0 0.25rem;
+        }
+      }
+
+      @media (max-width: 360px) {
+        .tabs button {
+          font-size: 0.8rem;
+          padding-left: 0.35rem;
+          padding-right: 0.35rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>QR Create &amp; Scan</h1>
+      <p class="sub">
+        <strong>Create</strong> a QR others can scan, or <strong>upload</strong> a QR image to read it
+        and open the animated message page. Host the built site on GitHub Pages so links stay on your
+        domain.
+      </p>
+
+      <div class="tabs" role="tablist" aria-label="Mode">
+        <button type="button" role="tab" data-tab="generate" id="tab-generate" aria-selected="true" aria-controls="panel-generate">
+          Create QR
+        </button>
+        <button type="button" role="tab" data-tab="scan" id="tab-scan" aria-selected="false" aria-controls="panel-scan">
+          Scan QR
+        </button>
+      </div>
+
+      <div id="panel-generate" data-panel="generate" role="tabpanel" aria-labelledby="tab-generate">
+        <div class="card">
+          <p class="sub" style="margin-top: 0; margin-bottom: 1rem">
+            Plain text becomes a link to this site’s animated page. URLs (<code>http://</code> or
+            <code>https://</code>) are encoded as-is.
+          </p>
+          <label for="text">Content</label>
+          <textarea
+            id="text"
+            placeholder="https://example.com or any text…"
+            spellcheck="false"
+          ></textarea>
+          <div class="row">
+            <div class="field">
+              <label for="ecc">Error correction</label>
+              <select id="ecc">
+                <option value="L">Low (~7%)</option>
+                <option value="M" selected>Medium (~15%)</option>
+                <option value="Q">Quartile (~25%)</option>
+                <option value="H">High (~30%)</option>
+              </select>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="button" class="primary" id="download" disabled>Download PNG</button>
+            <button type="button" class="secondary" id="copy-data" disabled>Copy image</button>
+          </div>
+        </div>
+
+        <div class="card preview" id="preview">
+          <div class="canvas-box" id="canvas-box">
+            <canvas id="qr" width="1" height="1" hidden aria-hidden="true"></canvas>
+            <p class="hint" id="placeholder">Enter content above to generate a QR code.</p>
+          </div>
+          <p class="encode-hint" id="encode-hint" hidden></p>
+        </div>
+      </div>
+
+      <div id="panel-scan" data-panel="scan" role="tabpanel" aria-labelledby="tab-scan" hidden>
+        <div class="card">
+          <p class="sub" style="margin-top: 0; margin-bottom: 1rem">
+            Drop a screenshot or photo of a QR code. We decode it in your browser, then send you to the
+            same animated page used when someone scans with a camera.
+          </p>
+          <input class="sr-only" type="file" id="scan-file" accept="image/*" />
+          <div class="drop-zone" id="drop-zone" role="button" tabindex="0" aria-label="Upload QR image">
+            <strong>Drop image here</strong>
+            <span>or click to choose PNG, JPG, or WebP</span>
+          </div>
+          <div class="scan-preview-wrap" hidden id="scan-preview-container">
+            <img id="scan-preview" alt="Uploaded QR preview" />
+          </div>
+          <p class="scan-status" id="scan-status" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
