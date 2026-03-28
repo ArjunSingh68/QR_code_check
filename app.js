@@ -1,7 +1,22 @@
 import { qrcode } from "qrcode-generator";
 import jsQR from "jsqr";
 
-const appRoot = new URL(import.meta.env.BASE_URL, window.location.href).href;
+/**
+ * App root URL (same folder as index.html). Pathname-based so GitHub Pages
+ * project sites like /QR_code_check/ work; avoids new URL("/", page) stripping the subpath.
+ */
+function getAppRoot() {
+  const { origin, pathname } = window.location;
+  let basePath = pathname;
+  if (basePath.endsWith(".html")) {
+    basePath = basePath.slice(0, basePath.lastIndexOf("/") + 1);
+  } else if (!basePath.endsWith("/")) {
+    basePath = `${basePath}/`;
+  }
+  return `${origin}${basePath}`;
+}
+
+const appRoot = getAppRoot();
 
 function viewerUrlForPayload(text) {
   const u = new URL("view.html", appRoot);
